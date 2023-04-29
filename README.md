@@ -27,9 +27,9 @@ $f_B(force\ B, x) = call\ ssi\ E_{B}[A\ bet\ x > 0]$
 # Calcul de $f_A$
 
 $E_{A}[force\ A\ et\ A\ bet\ x] =$
-$\ \ \ \ (1 - P(B\ call \mid A\ bet\ x)) * pot$
-$\ \ + P(B\ call \mid A\ bet\ x) * P(A\ win \mid B\ call) * (pot + bet)  \\$
-$\ \ + P(B\ call \mid A\ bet\ x) * (1 - P(A\ win \mid B\ call)) * (-bet)$
+$     (1 - P(B\ call \mid A\ bet\ x)) * pot$
+$   + P(B\ call \mid A\ bet\ x) * P(A\ win \mid B\ call) * (pot + bet)  \\$
+$   + P(B\ call \mid A\ bet\ x) * (1 - P(A\ win \mid B\ call)) * (-bet)$
 
 Attention, ici, B call sous entend B call sachant que A bet x
 
