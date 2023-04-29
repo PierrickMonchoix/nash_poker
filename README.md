@@ -26,7 +26,7 @@ $f_B(force\ B, x) = call\ ssi\ E_{B}[A\ bet\ x > 0]$
 
 # Calcul de $f_A$
 
-$E_{A}[force\ A\ \& A\ bet\ x] =$
+$E_{A}[force\ A\ et A\ bet\ x] =$
 $\ \ \ \ (1 - P(B\ call \mid A\ bet\ x)) * pot$
 $\ \ + P(B\ call \mid A\ bet\ x) * P(A\ win \mid B\ call) * (pot + bet)  \\$
 $\ \ + P(B\ call \mid A\ bet\ x) * (1 - P(A\ win \mid B\ call)) * (-bet)$
@@ -34,14 +34,14 @@ $\ \ + P(B\ call \mid A\ bet\ x) * (1 - P(A\ win \mid B\ call)) * (-bet)$
 Attention, ici, B call sous entend B call sachant que A bet x
 
 $
-E_{A}[force\ A\ \& A\ bet\ x] =                                                                   \\
+E_{A}[force\ A\ et A\ bet\ x] =                                                                   \\
 \ \ \ \ (1 - P(f_B(x) == true)) * pot                           \\
 \ \ + P(f_B(x) == true) * P(A\ win \mid f_B(x) == true) * (pot + bet)  \\
 \ \ + P(f_B(x) == true) * (1 - P(A\ win \mid f_B(x) == true)) * (-bet)
 $
 
 $
-E_{A}[force\ A\ \& A\ bet\ x] =                                                                   \\
+E_{A}[force\ A\ et A\ bet\ x] =                                                                   \\
 \ \ \ \ (1 - P(f_B(x) == true)) * pot                           \\
 \ \ + P(f_B(x) == true) * P(force\ A\ > force\ B\ |\ {force\ B} \in {\{F\ |\ f_B(F,x)=true\}}) * (pot + bet)  \\
 \ \ + P(f_B(x) == true) * (1 - P(force\ A\ > force\ B\ |\ {force\ B} \in {\{F\ |\ f_B(F,x)=true\}})) * (-bet)
@@ -49,7 +49,7 @@ $
 
 Rappel :
 
-$f_A = max_{f}(\sum_{i = force\ A} E_{A}[force\ A=i\ \& A\ bet\ f(i)])$
+$f_A = max_{f}(\sum_{i = force\ A} E_{A}[force\ A=i\ et A\ bet\ f(i)])$
 
 
 # Calcul de $f_B$
