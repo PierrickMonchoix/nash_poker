@@ -50,17 +50,13 @@ $f_A = max_{f}(\sum_{i = force\ A} E_{A}[force\ A=i\ et\ A\ bet\ f(i)])$
 
 # Calcul de $f_B$
 
-$
-E_{B}[B\ call] =                                           \\
-            \ \ \ \ P(B\ win \mid A\ bet\ x) * (pot + bet) \\
-            \ \ +(1 - P(B\ win \mid A\ bet\ x)) * (-bet)
-$
+$E_{B}[B\ call] =$
+$P(B\ win \mid A\ bet\ x) * (pot + bet)$
+$+(1 - P(B\ win \mid A\ bet\ x)) * (-bet)$
 
-$
-E_{B}[B\ call] =                                           \\
-            \ \ \ \ P(force\ B > force\ A | {force\ A} \in \{F\ |\ f_A(F)=x\}) * (pot + bet) \\
-            \ \ +(1 - P(force\ B > force\ A | {force\ A} \in \{F\ |\ f_A(F)=x\})) * (-bet)
-$
+$E_{B}[B\ call] =$
+$P(force\ B > force\ A | {force\ A} \in \{F\ |\ f_A(F)=x\}) * (pot + bet)$
+$+(1 - P(force\ B > force\ A | {force\ A} \in \{F\ |\ f_A(F)=x\})) * (-bet)$
 
 Rappel :
 
