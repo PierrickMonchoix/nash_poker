@@ -33,19 +33,15 @@ $+ P(B\ call \mid A\ bet\ x) * (1 - P(A\ win \mid B\ call)) * (-bet)$
 
 Attention, ici, B call sous entend B call sachant que A bet x
 
-$
-E_{A}[force\ A\ et\ A\ bet\ x] =                                                                   \\
-\ \ \ \ (1 - P(f_B(x) == true)) * pot                           \\
-\ \ + P(f_B(x) == true) * P(A\ win \mid f_B(x) == true) * (pot + bet)  \\
-\ \ + P(f_B(x) == true) * (1 - P(A\ win \mid f_B(x) == true)) * (-bet)
-$
+$E_{A}[force\ A\ et\ A\ bet\ x] =$
+$(1 - P(f_B(x) == true)) * pot$
+$+ P(f_B(x) == true) * P(A\ win \mid f_B(x) == true) * (pot + bet)$
+$+ P(f_B(x) == true) * (1 - P(A\ win \mid f_B(x) == true)) * (-bet)$
 
-$
-E_{A}[force\ A\ et\ A\ bet\ x] =                                                                   \\
-\ \ \ \ (1 - P(f_B(x) == true)) * pot                           \\
-\ \ + P(f_B(x) == true) * P(force\ A\ > force\ B\ |\ {force\ B} \in {\{F\ |\ f_B(F,x)=true\}}) * (pot + bet)  \\
-\ \ + P(f_B(x) == true) * (1 - P(force\ A\ > force\ B\ |\ {force\ B} \in {\{F\ |\ f_B(F,x)=true\}})) * (-bet)
-$
+$E_{A}[force\ A\ et\ A\ bet\ x] =$
+$(1 - P(f_B(x) == true)) * pot$
+$+ P(f_B(x) == true) * P(force\ A\ > force\ B\ |\ {force\ B} \in {\{F\ |\ f_B(F,x)=true\}}) * (pot + bet)$
+$+ P(f_B(x) == true) * (1 - P(force\ A\ > force\ B\ |\ {force\ B} \in {\{F\ |\ f_B(F,x)=true\}})) * (-bet)$
 
 Rappel :
 
