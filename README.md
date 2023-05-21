@@ -1,66 +1,68 @@
 # Situation
 
-*A* et *B* sont deux joueurs à qui sont respectivement attribués *force A* et *force B* compris entre 0 et 1.
+*A* et *B* sont deux joueurs à qui sont respectivement attribués *str A* et *str B* compris entre 0 et 1.
 A et B participent alors à un tour de pseudo poker où :
-- La force d'un joueur équivaut à la force de ses cartes
-- Un pot est déterminé au début du jeu
-- A mise une somme *x* (on dit que A bet x) pouvant être nulle et B peut choisir entre call soit fold (pas de relance) il s'agit du *choix* de B
-- Si, à l'abatage, force A est égal à force B alors B gagne
+- La force *str* d'un joueur équivaut à la force de la valeur de ses cartes
+- Un pot *pot* est déterminé au début du jeu
+- A mise une somme *x* (on dit que A bet x) pouvant être nulle et B peut choisir entre call soit fold (pas de relance possible) il s'agit du *choix* de B
+- Si, à l'abatage, str A est égal à str B alors B gagne
 
 On cherche la stratégie de mise de A représentéte par 
 
-$f_A : force\ A \mapsto x$
+$f_A : str\ A \mapsto x$
 
-tel que :
+tel que en moyenne, A gagne de l'argent sur au global (en moyenne sur les str A équiprobables), i.e tel que :
 
-$f_A = max_{f}(\sum_{i = force\ A} E_{A}[force\ A=i\ et \ A\ bet\ f(i)])$
+$f_A\ |\ max_{f_A}(\sum_{str\ A} E_{A}[str\ A,\ x])\ est\ atteint$
+
+Avec :
+
+$x = f_A(str\ A)$
 
 On cherche aussi 
 
-$f_B : force\ B, x \mapsto choix$
+$f_B : (str\ B, x) \mapsto choix$
 
-tel que :
+tel que en moyenne, B gagne de l'argent sur au global, i.e tel que :
 
-$f_B(force\ B, x) = call\ ssi\ E_{B}[A\ bet\ x > 0]$
+$f_B\ |\ max_{f_B}(\sum_{str\ B}\sum_{str\ x} freq(x)*E_{B}[str\ B,\ x,\ choix])\ est\ atteint$
 
+Avec :
 
-# Calcul de $f_A$
+$freq(x) = freq(f_A^{-1}(x))$
 
-$E_{A}[force\ A\ et\ A\ bet\ x] =$
+$choix = f_B(str\ B,\ x)$
+
+# Calcul de $E_{A}$ en fonction de $f_B$
+
+$E_{A}[str\ A,\ x] =$
 $(1 - P(B\ call \mid A\ bet\ x)) * pot$
 $+ P(B\ call \mid A\ bet\ x) * P(A\ win \mid B\ call) * (pot + bet)$
 $+ P(B\ call \mid A\ bet\ x) * (1 - P(A\ win \mid B\ call)) * (-bet)$
 
 Attention, ici, B call sous entend B call sachant que A bet x
 
-$E_{A}[force\ A\ et\ A\ bet\ x] =$
-$(1 - P(f_B(x) == true)) * pot$
-$+ P(f_B(x) == true) * P(A\ win \mid f_B(x) == true) * (pot + bet)$
-$+ P(f_B(x) == true) * (1 - P(A\ win \mid f_B(x) == true)) * (-bet)$
+$E_{A}[str\ A,\ x] =$
+$(1 - P(f_B(x) = call)) * pot$
+$+ P(f_B(x) = call) * P(A\ win \mid f_B(x) = call) * (pot + bet)$
+$+ P(f_B(x) = call) * (1 - P(A\ win \mid f_B(x) = call)) * (-bet)$
 
-$E_{A}[force\ A\ et\ A\ bet\ x] =$
-$(1 - P(f_B(x) == true)) * pot$
-$+ P(f_B(x) == true) * P(force\ A\ > force\ B\ |\ {force\ B} \in {\{F\ |\ f_B(F,x)=true\}}) * (pot + bet)$
-$+ P(f_B(x) == true) * (1 - P(force\ A\ > force\ B\ |\ {force\ B} \in {\{F\ |\ f_B(F,x)=true\}})) * (-bet)$
+$E_{A}[str\ A,\ x] =$
+$(1 - P(f_B(x) = call)) * pot$
+$+ P(f_B(x) = call) * P(str\ A\ > str\ B\ |\ {str\ B} \in {\{s\ |\ f_B(s,x)=call\}}) * (pot + bet)$
+$+ P(f_B(x) = call) * (1 - P(str\ A\ > str\ B\ |\ {str\ B} \in {\{s\ |\ f_B(s,x)=call\}})) * (-bet)$
 
-Rappel :
+# Calcul de $E_{B}$ en fonction de $f_A$
 
-$f_A = max_{f}(\sum_{i = force\ A} E_{A}[force\ A=i\ et\ A\ bet\ f(i)])$
+$E_{B}[str\ B,\ x,\ choix] = \begin{cases} 
+Si\ choix = call\ :\ P(B\ win \mid A\ bet\ x) * (pot + bet) + (1 - P(B\ win \mid A\ bet\ x)) * (-bet)\\\\
+Si\ choix = fold\ :\ 0 \end{cases}$
 
+$E_{B}[str\ B,\ x,\ choix] = \begin{cases} 
+Si\ choix = call\ :\ P(str\ B \geq str\ A\ |\ {str\ A} \in \{s\ |\ f_A(s)=x\}) * (pot + bet) + (1 - P(str\ B \geq str\ A\ |\ {str\ A} \in \{s\ |\ f_A(s)=x\})) * (-bet)\\\\
+Si\ choix = fold\ :\ 0 \end{cases}$
 
-# Calcul de $f_B$
-
-$E_{B}[B\ call] =$
-$P(B\ win \mid A\ bet\ x) * (pot + bet)$
-$+(1 - P(B\ win \mid A\ bet\ x)) * (-bet)$
-
-$E_{B}[B\ call] =$
-$P(force\ B > force\ A | {force\ A} \in \{F\ |\ f_A(F)=x\}) * (pot + bet)$
-$+(1 - P(force\ B > force\ A | {force\ A} \in \{F\ |\ f_A(F)=x\})) * (-bet)$
-
-Rappel :
-
-$f_B(force\ B, x) = true\ ssi\ E_{B}[A\ bet\ x] > 0$
+----
 
 # Résolution numérique
 
