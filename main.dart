@@ -255,7 +255,7 @@ void assertTrue(bool condition, String description) {
 void main() {
   print("~~~~~~~~~~~~~~~~~~~~\n");
   test__StrategyA();
-  //test__StrategyB();
+  test__StrategyB();
   print("\n~~~~~~~~~~~~~~~~~~~~");
 }
 
@@ -266,7 +266,7 @@ int MIN_SIZING = 0;
 int MAX_SIZING = 10;
 
 
-enum ChoixB { call, fold }
+enum ChoixB {fold, call}
 
 typedef Range = List<IntStrength>;
 typedef Winrate = double;
@@ -325,36 +325,38 @@ void test__StrategyA() {
   assertTrue((strategyA.getRange(sizingA : IntChip(10))[0] == IntStrength(1)) && (strategyA.getRange(sizingA : IntChip(10)).length == 1), "(strategyA.getRange(sizingA : IntChip(10))[0] == IntStrength(1)) && (strategyA.getRange(sizingA : IntChip(10)).length == 1)");
 }
 
-/* class StrategyB {
-  Map<Strength, Map<SizingA, ChoixB>> _map = {};
+class StrategyB {
+  // str -> chip -> choix
+  Map<int,Map<int,int>> _map = {};
 
   StrategyB() {
-    for (Strength strB = MIN_STRENGTH; strB <= MAX_STRENGTH; strB++) {
-      _map[strB] = {};
-      for (SizingA sizingA = MIN_SIZING; sizingA <= MAX_SIZING; sizingA++) {
-        _map[strB]![sizingA] = ChoixB.fold;
+    for (IntStrength strB = IntStrength(MIN_STRENGTH); strB <= IntStrength(MAX_STRENGTH); strB.pp()) {
+      _map[strB._body] = {};
+      for (IntChip sizingA = IntChip(MIN_SIZING); sizingA <= IntChip(MAX_SIZING); sizingA.pp()) {
+        _map[strB._body]![sizingA._body] = ChoixB.fold.index;
       }
     }
   }
 
-  void set({required Strength strB, required SizingA sizingA, required ChoixB choixB}) {
-    _map[strB]![sizingA] = choixB;
+  void set({required IntStrength strB, required IntChip sizingA, required ChoixB choixB}) {
+    _map[strB._body]![sizingA._body] = choixB.index;
   }
 
-  ChoixB f({required Strength strB, required SizingA sizingA}) {
-    return _map[strB]![sizingA]!;
+  ChoixB f({required IntStrength strB, required IntChip sizingA}) {
+    
+    return ChoixB.values[_map[strB._body]![sizingA._body]!];
   }
 }
 
 void test__StrategyB() {
   StrategyB strategyB = StrategyB();
-  strategyB.set(strB: 0, sizingA: 0, choixB: ChoixB.call);
-  strategyB.set(strB: 1, sizingA: 2, choixB: ChoixB.fold);
-  assertTrue(strategyB.f(strB: 0, sizingA: 0) == ChoixB.call, "strategyB.f(strB: 0, sizingA: 0) == ChoixB.call");
-  assertTrue(strategyB.f(strB: 1, sizingA: 2) == ChoixB.fold, "strategyB.f(strB: 1, sizingA: 2) == ChoixB.fold");
+  strategyB.set(strB: IntStrength(0), sizingA: IntChip(0), choixB: ChoixB.call);
+  strategyB.set(strB: IntStrength(1), sizingA: IntChip(2), choixB: ChoixB.fold);
+  assertTrue(strategyB.f(strB: IntStrength(0), sizingA: IntChip(0)) == ChoixB.call, "strategyB.f(strB: IntStrength(0), sizingA: IntChip(0)) == ChoixB.call");
+  assertTrue(strategyB.f(strB: IntStrength(1), sizingA: IntChip(2)) == ChoixB.fold, "strategyB.f(strB: IntStrength(1), sizingA: IntChip(2)) == ChoixB.fold");
 }
 
-typedef Esperance = double;
+/* typedef Esperance = double;
 
 typedef Pot = int; //TODO : créer un unique type money pour add siteinfg et pot
 
