@@ -1,4 +1,36 @@
 import 'dart:core';
+import 'dart:ffi';
+
+// Main ------------------------------------------------------------------------------------------------------ //
+
+void main() {
+  print("~~~~~~~~~~~~~~~~~~~~\n");
+  test__StrategyA();
+  test__StrategyB();
+  test__winrateDef();
+  test__esperanceB();
+  test_globalEquityB();
+  test_findBestStrategyB();
+  print("\n~~~~~~~~~~~~~~~~~~~~");
+}
+
+// Test utils ------------------------------------------------------------------------------------------------------ //
+
+void assertTrue(bool condition, String description) {
+  if (true == condition) {
+    print("test OK : " + description);
+  } else {
+    print("/!\\ : test KO : " + description);
+  }
+}
+
+// Unity definition ------------------------------------------------------------------------------------------------------ //
+
+int MIN_POWER = 0;
+int MAX_POWER = 2;
+
+int MIN_SIZING = 0;
+int MAX_SIZING = 10;
 
 class Scalar {
   double _body;
@@ -37,7 +69,7 @@ class Scalar {
     return _body < other._body;
   }
 
-  bool compare(Scalar other) {
+  bool operator ==(covariant Scalar other) {
     return (_body - other._body).abs() < 0.00001;
   }
 }
@@ -73,7 +105,7 @@ class FloatChip {
     return _body < other._body;
   }
 
-  bool compare(FloatChip other) {
+  bool operator ==(covariant FloatChip other) {
     return (_body - other._body).abs() < 0.00001;
   }
 }
@@ -132,51 +164,51 @@ class IntChip {
   }
 }
 
-class FloatStrength {
+class FloatPower {
   double _body;
 
-  FloatStrength(this._body);
+  FloatPower(this._body);
 
-  FloatStrength operator +(FloatStrength other) {
-    FloatStrength ret = FloatStrength(0);
+  FloatPower operator +(FloatPower other) {
+    FloatPower ret = FloatPower(0);
     ret._body = _body + other._body;
     return ret;
   }
 
-  FloatStrength operator -(FloatStrength other) {
-    FloatStrength ret = FloatStrength(0);
+  FloatPower operator -(FloatPower other) {
+    FloatPower ret = FloatPower(0);
     ret._body = _body - other._body;
     return ret;
   }
 
-  FloatStrength operator *(covariant Scalar Scalar) {
-    FloatStrength ret = FloatStrength(0);
+  FloatPower operator *(covariant Scalar Scalar) {
+    FloatPower ret = FloatPower(0);
     ret._body = _body * Scalar._body;
     return ret;
   }
 
-  bool operator >(FloatStrength other) {
+  bool operator >(FloatPower other) {
     return _body > other._body;
   }
 
-  bool operator <(FloatStrength other) {
+  bool operator <(FloatPower other) {
     return _body < other._body;
   }
 }
 
-class IntStrength {
+class IntPower {
   int _body;
 
-  IntStrength(this._body);
+  IntPower(this._body);
 
-  IntStrength operator +(IntStrength other) {
-    IntStrength ret = IntStrength(0);
+  IntPower operator +(IntPower other) {
+    IntPower ret = IntPower(0);
     ret._body = _body + other._body;
     return ret;
   }
 
   // plus equal (++)
-  void pe(IntStrength other) {
+  void pe(IntPower other) {
     _body += other._body;
   }
 
@@ -185,70 +217,49 @@ class IntStrength {
     _body++;
   }
 
-  IntStrength operator -(IntStrength other) {
-    IntStrength ret = IntStrength(0);
+  IntPower operator -(IntPower other) {
+    IntPower ret = IntPower(0);
     ret._body = _body - other._body;
     return ret;
   }
 
-  FloatStrength operator *(covariant Scalar Scalar) {
-    FloatStrength ret = FloatStrength(0);
+  FloatPower operator *(covariant Scalar Scalar) {
+    FloatPower ret = FloatPower(0);
     ret._body = _body * Scalar._body;
     return ret;
   }
 
-  bool operator >(IntStrength other) {
+  bool operator >(IntPower other) {
     return _body > other._body;
   }
 
-  bool operator <(IntStrength other) {
+  bool operator <(IntPower other) {
     return _body < other._body;
   }
 
-  bool operator >=(IntStrength other) {
+  bool operator >=(IntPower other) {
     return _body >= other._body;
   }
 
-  bool operator <=(IntStrength other) {
+  bool operator <=(IntPower other) {
     return _body <= other._body;
   }
 
-  bool operator ==(covariant IntStrength other) {
+  bool operator ==(covariant IntPower other) {
     return _body == other._body;
   }
 }
 
-void assertTrue(bool condition, String description) {
-  if (true == condition) {
-    print("test OK : " + description);
-  } else {
-    print("/!\\ : test KO : " + description);
-  }
-}
-
-void main() {
-  print("~~~~~~~~~~~~~~~~~~~~\n");
-  test__StrategyA();
-  test__StrategyB();
-  test__winrateDef();
-  test__esperanceB();
-  print("\n~~~~~~~~~~~~~~~~~~~~");
-}
-
-int MIN_STRENGTH = 0;
-int MAX_STRENGTH = 2;
-
-int MIN_SIZING = 0;
-int MAX_SIZING = 10;
-
 enum ChoixB { fold, call }
 
-typedef Range = List<IntStrength>;
+typedef Range = List<IntPower>;
 
-Scalar winrateDef({required IntStrength strengthDef, required Range rangeAtk}) {
+// Compute utils ------------------------------------------------------------------------------------------------------ //
+
+Scalar winrateDef({required IntPower POWERDef, required Range rangeAtk}) {
   Scalar ret = Scalar(0.0);
-  for (IntStrength element in rangeAtk) {
-    if (strengthDef >= element) {
+  for (IntPower element in rangeAtk) {
+    if (POWERDef >= element) {
       ret = ret + Scalar(1.0);
     }
   }
@@ -257,43 +268,45 @@ Scalar winrateDef({required IntStrength strengthDef, required Range rangeAtk}) {
 }
 
 void test__winrateDef() {
-  Range rangeAtk = [IntStrength(0), IntStrength(1), IntStrength(2)];
-  IntStrength strengthDef = IntStrength(1);
+  Range rangeAtk = [IntPower(0), IntPower(1), IntPower(2)];
+  IntPower POWERDef = IntPower(1);
   assertTrue(
-      winrateDef(strengthDef: strengthDef, rangeAtk: rangeAtk)
-          .compare(Scalar(2 / 3)),
-      "winrateDef(strengthDef: strengthDef, rangeAtk: rangeAtk).compare(Scalar(2/3))");
+      winrateDef(POWERDef: POWERDef, rangeAtk: rangeAtk) == Scalar(2 / 3),
+      "winrateDef(POWERDef: POWERDef, rangeAtk: rangeAtk).compare(Scalar(2/3))");
 }
 
+// Strategy A ------------------------------------------------------------------------------------------------------ //
+
 class StrategyA {
-  //strA -> sizingA
+  //pwrA -> sizingA
   Map<int, int> _map = {};
 
+  // check by default
   StrategyA({Map<int, int>? map}) {
     if (map != null) {
       _map = map;
     } else {
-      for (IntStrength strA = IntStrength(MIN_STRENGTH);
-          strA <= IntStrength(MAX_STRENGTH);
-          strA.pp()) {
-        _map[strA._body] = IntChip(0)._body;
+      for (IntPower pwrA = IntPower(MIN_POWER);
+          pwrA <= IntPower(MAX_POWER);
+          pwrA.pp()) {
+        _map[pwrA._body] = IntChip(0)._body;
       }
     }
   }
 
-  void set({required IntStrength strA, required IntChip sizingA}) {
-    _map[strA._body] = sizingA._body;
+  void set({required IntPower pwrA, required IntChip sizingA}) {
+    _map[pwrA._body] = sizingA._body;
   }
 
-  IntChip f({required IntStrength strA}) {
-    return IntChip(_map[strA._body]!);
+  IntChip f({required IntPower pwrA}) {
+    return IntChip(_map[pwrA._body]!);
   }
 
   Range getRange({required IntChip sizingA}) {
     Range ret = [];
     _map.forEach((key, value) {
       if (value == sizingA._body) {
-        ret.add(IntStrength(key));
+        ret.add(IntPower(key));
       }
     });
     if (ret.length == 0) {
@@ -303,65 +316,133 @@ class StrategyA {
     }
     return ret;
   }
+
+  List<IntChip> getSizingList()
+  {
+    List<IntChip> ret = [];
+    ret.add(IntChip(_map[MIN_POWER]!));
+    for(IntPower pwrA = IntPower(MIN_POWER); pwrA <= IntPower(MAX_POWER); pwrA.pp())
+    {
+      IntChip sizingA = IntChip(_map[pwrA._body]!);
+      if(!ret.contains(sizingA))
+      {
+        ret.add(sizingA);
+      }
+    }
+    return ret;
+  }
+
+  Scalar getFreqSizing(IntChip sizingA)
+  {
+    int count = 0;
+    for(IntPower pwrA = IntPower(MIN_POWER); pwrA <= IntPower(MAX_POWER); pwrA.pp())
+    {
+      if(IntChip(_map[pwrA._body]!) == sizingA)
+      {
+        count++;
+      }
+    }
+    return Scalar(count/(1+MAX_POWER-MIN_POWER));
+  }
 }
 
 void test__StrategyA() {
+  MIN_POWER = 0;
+  MAX_POWER = 1;
+
   StrategyA strategyA = StrategyA();
-  strategyA.set(strA: IntStrength(0), sizingA: IntChip(0));
-  strategyA.set(strA: IntStrength(1), sizingA: IntChip(10));
-  assertTrue(strategyA.f(strA: IntStrength(0)) == IntChip(0),
-      "strategyA.f(strA:IntStrength(0)) == IntChip(0)");
-  assertTrue(strategyA.f(strA: IntStrength(1)) == IntChip(10),
-      "strategyA.f(strA:IntStrength(1)) == IntChip(10)");
+  strategyA.set(pwrA: IntPower(0), sizingA: IntChip(0));
+  strategyA.set(pwrA: IntPower(1), sizingA: IntChip(10));
+
+  assertTrue(strategyA.f(pwrA: IntPower(0)) == IntChip(0),
+      "strategyA.f(pwrA:IntPower(0)) == IntChip(0)");
+  assertTrue(strategyA.f(pwrA: IntPower(1)) == IntChip(10),
+      "strategyA.f(pwrA:IntPower(1)) == IntChip(10)");
   assertTrue(
-      (strategyA.getRange(sizingA: IntChip(10))[0] == IntStrength(1)) &&
+      (strategyA.getRange(sizingA: IntChip(10))[0] == IntPower(1)) &&
           (strategyA.getRange(sizingA: IntChip(10)).length == 1),
-      "(strategyA.getRange(sizingA : IntChip(10))[0] == IntStrength(1)) && (strategyA.getRange(sizingA : IntChip(10)).length == 1)");
+      "(strategyA.getRange(sizingA : IntChip(10))[0] == IntPower(1)) && (strategyA.getRange(sizingA : IntChip(10)).length == 1)");
+  assertTrue(strategyA.getFreqSizing(IntChip(10)) == Scalar(0.5), "strategyA.freqSizing(IntChip(10)) == Scalar(0.5)");
+  assertTrue(strategyA.getFreqSizing(IntChip(0)) == Scalar(0.5), "strategyA.freqSizing(IntChip(0)) == Scalar(0.5)");
+  assertTrue(strategyA.getFreqSizing(IntChip(2)) == Scalar(0.0), "strategyA.freqSizing(IntChip(2)) == Scalar(0.0)");
 }
 
+// Strategy B ------------------------------------------------------------------------------------------------------ //
+
 class StrategyB {
-  // str -> chip -> choix
+  // pwr -> chip -> choix
   Map<int, Map<int, int>> _map = {};
 
+  // fold by default
   StrategyB() {
-    for (IntStrength strB = IntStrength(MIN_STRENGTH);
-        strB <= IntStrength(MAX_STRENGTH);
-        strB.pp()) {
-      _map[strB._body] = {};
+    for (IntPower pwrB = IntPower(MIN_POWER);
+        pwrB <= IntPower(MAX_POWER);
+        pwrB.pp()) {
+      _map[pwrB._body] = {};
       for (IntChip sizingA = IntChip(MIN_SIZING);
           sizingA <= IntChip(MAX_SIZING);
           sizingA.pp()) {
-        _map[strB._body]![sizingA._body] = ChoixB.fold.index;
+        _map[pwrB._body]![sizingA._body] = ChoixB.fold.index;
       }
     }
   }
 
   void set(
-      {required IntStrength strB,
+      {required IntPower pwrB,
       required IntChip sizingA,
       required ChoixB choixB}) {
-    _map[strB._body]![sizingA._body] = choixB.index;
+    _map[pwrB._body]![sizingA._body] = choixB.index;
   }
 
-  ChoixB f({required IntStrength strB, required IntChip sizingA}) {
-    return ChoixB.values[_map[strB._body]![sizingA._body]!];
+/*   void copy({required StrategyB other})
+  {
+    _map.forEach((key, value) { })
+  }
+ */
+  ChoixB f({required IntPower pwrB, required IntChip sizingA}) {
+    return ChoixB.values[_map[pwrB._body]![sizingA._body]!];
+  }
+
+  String toString({StrategyA? strategyA})
+  {
+    String ret = "";
+    for (IntPower pwrB = IntPower(MIN_POWER); pwrB <= IntPower(MAX_POWER); pwrB.pp()) 
+    {
+      ret += "pwrB : ${pwrB._body}\n";
+      for (IntChip sizingA = IntChip(MIN_SIZING); sizingA <= IntChip(MAX_SIZING); sizingA.pp())
+      {
+        ret += "         sizingA : ${sizingA._body} ";
+        if((strategyA!=null) && (!strategyA.getSizingList().contains(sizingA)))
+        {
+          ret += "         choixB : N/A ";
+        }
+        else
+        {
+          ret += "         choixB : ${ChoixB.values[_map[pwrB._body]![sizingA._body]!]} ";
+        }
+        ret += "\n";
+      }
+    }
+    return ret;
   }
 }
 
 void test__StrategyB() {
   StrategyB strategyB = StrategyB();
-  strategyB.set(strB: IntStrength(0), sizingA: IntChip(0), choixB: ChoixB.call);
-  strategyB.set(strB: IntStrength(1), sizingA: IntChip(2), choixB: ChoixB.fold);
+  strategyB.set(pwrB: IntPower(0), sizingA: IntChip(0), choixB: ChoixB.call);
+  strategyB.set(pwrB: IntPower(1), sizingA: IntChip(2), choixB: ChoixB.fold);
   assertTrue(
-      strategyB.f(strB: IntStrength(0), sizingA: IntChip(0)) == ChoixB.call,
-      "strategyB.f(strB: IntStrength(0), sizingA: IntChip(0)) == ChoixB.call");
+      strategyB.f(pwrB: IntPower(0), sizingA: IntChip(0)) == ChoixB.call,
+      "strategyB.f(pwrB: IntPower(0), sizingA: IntChip(0)) == ChoixB.call");
   assertTrue(
-      strategyB.f(strB: IntStrength(1), sizingA: IntChip(2)) == ChoixB.fold,
-      "strategyB.f(strB: IntStrength(1), sizingA: IntChip(2)) == ChoixB.fold");
+      strategyB.f(pwrB: IntPower(1), sizingA: IntChip(2)) == ChoixB.fold,
+      "strategyB.f(pwrB: IntPower(1), sizingA: IntChip(2)) == ChoixB.fold");
 }
 
+// Equity B ------------------------------------------------------------------------------------------------------ //
+
 FloatChip esperanceB(
-    {required IntStrength strB,
+    {required IntPower pwrB,
     required IntChip sizingA,
     required ChoixB choixB,
     required StrategyA strategyA,
@@ -371,12 +452,12 @@ FloatChip esperanceB(
   if (choixB == ChoixB.call) {
     ret = (pot + sizingA) *
             winrateDef(
-                strengthDef: strB,
+                POWERDef: pwrB,
                 rangeAtk: strategyA.getRange(sizingA: sizingA)) +
         (IntChip(0) - sizingA) *
             (Scalar(1.0) -
                 winrateDef(
-                    strengthDef: strB,
+                    POWERDef: pwrB,
                     rangeAtk: strategyA.getRange(sizingA: sizingA)));
   } // else : value stay 0.0
 
@@ -384,61 +465,170 @@ FloatChip esperanceB(
 }
 
 void test__esperanceB() {
-  MAX_STRENGTH = 1;
+  MAX_POWER = 1;
   assertTrue(
       esperanceB(
-              strB: IntStrength(1),
+              pwrB: IntPower(1),
               sizingA: IntChip(0),
               choixB: ChoixB.fold,
               strategyA: StrategyA(),
-              pot: IntChip(3))
-          .compare(FloatChip(0.0)),
+              pot: IntChip(3))==FloatChip(0.0),
       "test__esperanceB_1");
   assertTrue(
       esperanceB(
-              strB: IntStrength(1),
+              pwrB: IntPower(1),
               sizingA: IntChip(0),
               choixB: ChoixB.call,
               strategyA: StrategyA(),
-              pot: IntChip(3))
-          .compare(FloatChip(3.0)),
+              pot: IntChip(3))==FloatChip(3.0),
       "test__esperanceB_2");
   assertTrue(
       esperanceB(
-              strB: IntStrength(0),
+              pwrB: IntPower(0),
               sizingA: IntChip(0),
               choixB: ChoixB.call,
               strategyA: StrategyA(),
-              pot: IntChip(3))
-          .compare(FloatChip(1.5)),
+              pot: IntChip(3))==FloatChip(1.5),
       "test__esperanceB_3");
   assertTrue(
       esperanceB(
-              strB: IntStrength(0),
+              pwrB: IntPower(0),
               sizingA: IntChip(5),
               choixB: ChoixB.call,
               strategyA: StrategyA(map: {0: 5, 1: 5}),
-              pot: IntChip(3))
-          .compare(FloatChip(1.5)),
+              pot: IntChip(3))==FloatChip(1.5),
       "test__esperanceB_4");
-  MAX_STRENGTH = 2;
+  MAX_POWER = 2;
   assertTrue(
       esperanceB(
-              strB: IntStrength(0),
+              pwrB: IntPower(0),
               sizingA: IntChip(5),
               choixB: ChoixB.call,
               strategyA: StrategyA(map: {0: 5, 1: 5, 2: 5}),
-              pot: IntChip(3))
-          .compare(FloatChip(-2 / 3)),
+              pot: IntChip(3))==FloatChip(-2 / 3),
       "test__esperanceB_5");
-  MAX_STRENGTH = 3;
+  MAX_POWER = 3;
   assertTrue(
       esperanceB(
-              strB: IntStrength(0),
+              pwrB: IntPower(0),
               sizingA: IntChip(5),
               choixB: ChoixB.call,
               strategyA: StrategyA(map: {0: 5, 1: 5, 2: 5, 3: 10}),
-              pot: IntChip(3))
-          .compare(FloatChip(-2 / 3)),
+              pot: IntChip(3))==FloatChip(-2 / 3),
       "test__esperanceB_6");
 }
+
+FloatChip globalEquityB({required StrategyB strategyB, required StrategyA strategyA, required IntChip pot})
+{
+  FloatChip ret = FloatChip(0);
+  for (IntPower pwrB = IntPower(MIN_POWER); pwrB <= IntPower(MAX_POWER); pwrB.pp())
+  {
+    for (IntChip sizingA in strategyA.getSizingList()) {
+      ret = ret + esperanceB(pwrB: pwrB, sizingA: sizingA, choixB: strategyB.f(pwrB: pwrB, sizingA: sizingA), strategyA: strategyA, pot: pot) * strategyA.getFreqSizing(sizingA);
+      //print("pwrB : ${pwrB._body}  sizingA : ${sizingA._body}");
+      //print("debug globalEquityB esperanceB : ${(esperanceB(pwrB: pwrB, sizingA: sizingA, choixB: strategyB.f(pwrB: pwrB, sizingA: sizingA), strategyA: strategyA, pot: pot) * strategyA.getFreqSizing(sizingA))._body}");
+    }
+  }
+  ret = ret * Scalar(1/(1+MAX_POWER-MIN_POWER));
+  return ret;
+}
+
+void test_globalEquityB()
+{
+  MIN_POWER = 0;
+  MAX_POWER = 1;
+
+  StrategyA strategyA = StrategyA();
+  StrategyB strategyB = StrategyB();
+  IntChip pot = IntChip(1);
+
+  strategyB.set(pwrB: IntPower(0), sizingA: IntChip(0), choixB: ChoixB.fold);
+  strategyB.set(pwrB: IntPower(1), sizingA: IntChip(0), choixB: ChoixB.fold);
+  assertTrue(globalEquityB(strategyB: strategyB, strategyA: strategyA, pot: pot) == FloatChip(0), "globalEquityB ff");
+
+  // call with 0
+  strategyB.set(pwrB: IntPower(0), sizingA: IntChip(0), choixB: ChoixB.call);
+  strategyB.set(pwrB: IntPower(1), sizingA: IntChip(0), choixB: ChoixB.fold);
+  assertTrue(globalEquityB(strategyB: strategyB, strategyA: strategyA, pot: pot) == FloatChip(1/4), "globalEquityB cf");
+
+  // call with 1
+  strategyB.set(pwrB: IntPower(0), sizingA: IntChip(0), choixB: ChoixB.fold);
+  strategyB.set(pwrB: IntPower(1), sizingA: IntChip(0), choixB: ChoixB.call);
+  assertTrue(globalEquityB(strategyB: strategyB, strategyA: strategyA, pot: pot) == FloatChip(2/4), "globalEquityB fc");
+
+  // full call
+  strategyB.set(pwrB: IntPower(0), sizingA: IntChip(0), choixB: ChoixB.call);
+  strategyB.set(pwrB: IntPower(1), sizingA: IntChip(0), choixB: ChoixB.call);
+  assertTrue(globalEquityB(strategyB: strategyB, strategyA: strategyA, pot: pot) == FloatChip(3/4), "globalEquityB cc");
+
+}
+
+StrategyB findBestStrategyB({required StrategyA strategyA, required IntChip pot})
+{
+  StrategyB ret = StrategyB();
+
+  StrategyB iterateStrategyB = StrategyB();
+
+  FloatChip eqB = globalEquityB(strategyB: iterateStrategyB, strategyA: strategyA, pot: pot);
+
+  for (IntPower pwrB = IntPower(MIN_POWER); pwrB <= IntPower(MAX_POWER); pwrB.pp()) 
+  {
+    for (IntChip sizingA in strategyA.getSizingList())
+    {
+      for (int i = 0; i <= 1; i++) 
+      {
+        ChoixB choixB;
+        if(i == 0)
+        {
+          choixB = ChoixB.fold;
+        }
+        else
+        {
+          choixB = ChoixB.call;
+        }
+        //
+        iterateStrategyB.set(pwrB: pwrB, sizingA: sizingA, choixB: choixB); // mais on a pas reset les autres path !!!
+        FloatChip tempEqB = globalEquityB(strategyB: iterateStrategyB, strategyA: strategyA, pot: pot);
+        print("treat stratA (pwrB:${pwrB._body} sizingA:${sizingA._body} choixB:${choixB.index}) : \n${iterateStrategyB.toString()}\ntempEqB:${tempEqB._body}\n\n\n");
+        if(tempEqB > eqB)
+        {
+          eqB = FloatChip(tempEqB._body);
+          ret.set(pwrB: pwrB, sizingA: sizingA, choixB: choixB);// nope: set alla pths not one
+        }
+      }
+    }
+  }
+  return ret;
+}
+
+void test_findBestStrategyB()
+{
+  MIN_POWER = 0;
+  MAX_POWER = 1;
+  
+  MIN_SIZING = 0;
+  MAX_SIZING = 1;
+
+  // full check
+  StrategyA strategyA = StrategyA();
+  IntChip pot = IntChip(1);
+
+  //StrategyB bestStratB = findBestStrategyB(strategyA: strategyA, pot: pot);
+/*   print(""); */
+  //print(bestStratB.toString(strategyA : strategyA));
+/*   print("\n\n"); */
+  strategyA.set(pwrA: IntPower(1), sizingA: IntChip(MAX_SIZING));
+  //print("len stra getSizingList = ${strategyA.getSizingList().length}");
+  StrategyB bestStratB = findBestStrategyB(strategyA: strategyA, pot: pot);
+/*   print("");
+  print(bestStratB.toString(strategyA : strategyA)); */
+
+
+  print(globalEquityB(strategyB: bestStratB, strategyA: strategyA, pot: pot)._body);
+  bestStratB.set(pwrB: IntPower(1), sizingA: IntChip(MIN_SIZING), choixB: ChoixB.call);
+  print(globalEquityB(strategyB: bestStratB, strategyA: strategyA, pot: pot)._body);
+/*   print("dd");
+  print(esperanceB(pwrB: IntPower(1), sizingA: IntChip(4), choixB: ChoixB.call, strategyA: strategyA, pot: IntChip(4))._body);
+  print(esperanceB(pwrB: IntPower(1), sizingA: IntChip(4), choixB: ChoixB.fold, strategyA: strategyA, pot: IntChip(4))._body); */
+}
+
