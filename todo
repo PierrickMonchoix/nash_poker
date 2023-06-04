@@ -103,3 +103,20 @@ il fau talors mieux utiliser les matrices multi dim et les fonctions de parthing
 voir https://medium.com/flutter-community/working-with-multi-dimensional-list-in-dart-78ff332430a
 
 - dans findStratB, copier la strat entiere et pas un path
+
+find :
+    treat "fold all strat"
+    exec F(vide, all&)
+
+F(P,A) :
+- for elem in A :
+  - new strat
+  - add all(P) in strat
+  - add elem in strat
+  - treat(strat)
+  - comP = copy(P)
+  - add elem in comP
+  - redA = copy(A)
+  - rm elem of (redA)
+  - if size(redA) > 0
+    - F(P,redA)

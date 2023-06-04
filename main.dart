@@ -1,16 +1,33 @@
 import 'dart:core';
 import 'dart:ffi';
 
+int MIN_POWER = 0;
+int MAX_POWER = 2;
+
+int MIN_SIZING = 0;
+int MAX_SIZING = 10;
+
 // Main ------------------------------------------------------------------------------------------------------ //
 
 void main() {
   print("~~~~~~~~~~~~~~~~~~~~\n");
-  test__StrategyA();
+/*   test__StrategyA();
   test__StrategyB();
   test__winrateDef();
   test__esperanceB();
   test_globalEquityB();
-  test_findBestStrategyB();
+  //test_findBestStrategyB(); */
+
+  test_find();
+
+  MIN_POWER = 0;
+  MAX_POWER = 1;
+
+  MIN_SIZING = 0;
+  MAX_SIZING = 1;
+
+
+
   print("\n~~~~~~~~~~~~~~~~~~~~");
 }
 
@@ -26,11 +43,7 @@ void assertTrue(bool condition, String description) {
 
 // Unity definition ------------------------------------------------------------------------------------------------------ //
 
-int MIN_POWER = 0;
-int MAX_POWER = 2;
 
-int MIN_SIZING = 0;
-int MAX_SIZING = 10;
 
 class Scalar {
   double _body;
@@ -113,7 +126,15 @@ class FloatChip {
 class IntChip {
   int _body;
 
+  
+  @override
+  String toString() {
+    return "$_body";
+  }
+
   IntChip(this._body);
+
+  IntChip.copy(IntChip intChip): _body=intChip._body;
 
   IntChip operator +(IntChip other) {
     IntChip ret = IntChip(0);
@@ -199,7 +220,14 @@ class FloatPower {
 class IntPower {
   int _body;
 
+  @override
+  String toString() {
+    return "$_body";
+  }
+
   IntPower(this._body);
+
+  IntPower.copy(IntPower intPower): _body=intPower._body;
 
   IntPower operator +(IntPower other) {
     IntPower ret = IntPower(0);
@@ -414,7 +442,7 @@ class StrategyB {
         ret += "         sizingA : ${sizingA._body} ";
         if((strategyA!=null) && (!strategyA.getSizingList().contains(sizingA)))
         {
-          ret += "         choixB : N/A ";
+          ret += "         choixB : NEVER HAPPEN ";
         }
         else
         {
@@ -599,6 +627,122 @@ StrategyB findBestStrategyB({required StrategyA strategyA, required IntChip pot}
     }
   }
   return ret;
+}
+
+class CouplePwrBSizingA
+{
+  IntPower pwrB;
+  IntChip sizA;
+
+  CouplePwrBSizingA(this.pwrB, this.sizA);
+
+  CouplePwrBSizingA.copy(CouplePwrBSizingA couplePwrBSizingA) : pwrB = IntPower.copy(couplePwrBSizingA.pwrB), sizA = IntChip.copy(couplePwrBSizingA.sizA);
+
+  @override
+  String toString() {
+    return "$pwrB:$sizA";
+  }
+}
+
+class ListCouplePwrBSizingA
+{
+  late List<CouplePwrBSizingA> list;
+
+  ListCouplePwrBSizingA.empty()
+  {
+    list = [];
+  }
+
+  ListCouplePwrBSizingA.universe()
+  {
+    list = [];
+    for (int iPwrB = MIN_POWER ; iPwrB <= MAX_POWER ; iPwrB++)
+    {
+      for (int iSizA = MIN_SIZING ; iSizA <= MAX_SIZING ; iSizA++)
+      {
+        CouplePwrBSizingA c = CouplePwrBSizingA(IntPower(iPwrB), IntChip(iSizA));
+        list.add(c);
+      }
+    }
+  }
+
+  ListCouplePwrBSizingA.copy(ListCouplePwrBSizingA listCouplePwrBSizingA)
+  {
+    list = [];
+    for (CouplePwrBSizingA elem in listCouplePwrBSizingA.list) {
+      list.add(CouplePwrBSizingA.copy(elem));
+    }
+  }
+
+
+  @override
+  String toString() {
+    return list.toString();
+  }
+}
+
+StrategyB _recFind(ListCouplePwrBSizingA P, ListCouplePwrBSizingA A, StrategyB actBestStratB, StrategyA strategyA, IntChip pot)
+{
+  while(A.list.isNotEmpty)
+  {
+    CouplePwrBSizingA elem = A.list[0];
+    StrategyB strategyB = StrategyB();
+    for (CouplePwrBSizingA p in P.list) {
+      strategyB.set(pwrB: p.pwrB, sizingA: p.sizA, choixB: ChoixB.call);
+    }
+
+    /* treat */
+    print("P: $P");
+    print("A: $A");
+    print("elem: $elem");
+    strategyB.set(pwrB: elem.pwrB, sizingA: elem.sizA, choixB: ChoixB.call);
+    print("\nStrat : \n" + strategyB.toString() + "\n");
+    if( globalEquityB(strategyB: strategyB, strategyA: strategyA, pot: pot) > globalEquityB(strategyB: actBestStratB, strategyA: strategyA, pot: pot))
+    {
+      print("CHANE\n");
+      actBestStratB = strategyB;
+    }
+
+    ListCouplePwrBSizingA comP = ListCouplePwrBSizingA.copy(P);
+    comP.list.add(elem);
+    A.list.removeWhere((a) => (elem.pwrB == a.pwrB) && (elem.sizA == a.sizA));
+    ListCouplePwrBSizingA redA = ListCouplePwrBSizingA.copy(A);
+    if(redA.list.length > 0)
+    {
+      actBestStratB = _recFind(comP, redA, actBestStratB, strategyA, pot);
+    }
+  }
+  return actBestStratB;
+}
+
+StrategyB find(StrategyA strategyA, IntChip pot) 
+{
+  StrategyB strategyB = StrategyB();
+  ListCouplePwrBSizingA P = ListCouplePwrBSizingA.empty();
+  ListCouplePwrBSizingA A = ListCouplePwrBSizingA.universe();
+
+  return _recFind(P, A, strategyB, strategyA, pot);
+}
+
+void test_find()
+{
+  MIN_POWER = 0;
+  MAX_POWER = 2;
+  MIN_SIZING = 0;
+  MAX_SIZING = 1;
+
+  /* full check */
+  StrategyA strategyA = StrategyA();
+  strategyA.set(pwrA: IntPower(0), sizingA: IntChip(MAX_SIZING));
+  strategyA.set(pwrA: IntPower(1), sizingA: IntChip(MAX_SIZING));
+  strategyA.set(pwrA: IntPower(2), sizingA: IntChip(MAX_SIZING));
+  
+  IntChip pot = IntChip(1);
+
+  
+  
+  print("VOILA : \n\n ${find(strategyA, pot).toString(strategyA: strategyA)}");
+
 }
 
 void test_findBestStrategyB()
