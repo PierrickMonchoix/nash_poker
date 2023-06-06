@@ -445,6 +445,7 @@ class ListCouplePwrBSizingA
 
 StrategyB _recBestFindStratB(ListCouplePwrBSizingA P, ListCouplePwrBSizingA A, StrategyB actBestStratB, StrategyA strategyA, int pot)
 {
+  // com = completed  red = reduced
   while(A.list.isNotEmpty)
   {
     CouplePwrBSizingA elem = A.list[0];
@@ -452,16 +453,9 @@ StrategyB _recBestFindStratB(ListCouplePwrBSizingA P, ListCouplePwrBSizingA A, S
     for (CouplePwrBSizingA p in P.list) {
       strategyB.set(pwrB: p.pwrB, sizingA: p.sizA, choixB: ChoixB.call);
     }
-
-    /* treat */
-    // print("P: $P");
-    // print("A: $A");
-    // print("elem: $elem");
     strategyB.set(pwrB: elem.pwrB, sizingA: elem.sizA, choixB: ChoixB.call);
-    // print("\nStrat : \n" + strategyB.toString() + "\n");
     if( globalEquityB(strategyB: strategyB, strategyA: strategyA, pot: pot) > globalEquityB(strategyB: actBestStratB, strategyA: strategyA, pot: pot))
     {
-      // print("CHANE\n");
       actBestStratB = strategyB;
     }
 
