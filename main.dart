@@ -11,22 +11,13 @@ int MAX_SIZING = 10;
 
 void main() {
   print("~~~~~~~~~~~~~~~~~~~~\n");
-/*   test__StrategyA();
+  test__StrategyA();
   test__StrategyB();
   test__winrateDef();
   test__esperanceB();
   test_globalEquityB();
-  //test_findBestStrategyB(); */
 
-  test_find();
-
-  MIN_POWER = 0;
-  MAX_POWER = 1;
-
-  MIN_SIZING = 0;
-  MAX_SIZING = 1;
-
-
+  test_findBestStratB();
 
   print("\n~~~~~~~~~~~~~~~~~~~~");
 }
@@ -681,7 +672,7 @@ class ListCouplePwrBSizingA
   }
 }
 
-StrategyB _recFind(ListCouplePwrBSizingA P, ListCouplePwrBSizingA A, StrategyB actBestStratB, StrategyA strategyA, IntChip pot)
+StrategyB _recBestFindStratB(ListCouplePwrBSizingA P, ListCouplePwrBSizingA A, StrategyB actBestStratB, StrategyA strategyA, IntChip pot)
 {
   while(A.list.isNotEmpty)
   {
@@ -692,14 +683,14 @@ StrategyB _recFind(ListCouplePwrBSizingA P, ListCouplePwrBSizingA A, StrategyB a
     }
 
     /* treat */
-    print("P: $P");
-    print("A: $A");
-    print("elem: $elem");
+    // print("P: $P");
+    // print("A: $A");
+    // print("elem: $elem");
     strategyB.set(pwrB: elem.pwrB, sizingA: elem.sizA, choixB: ChoixB.call);
-    print("\nStrat : \n" + strategyB.toString() + "\n");
+    // print("\nStrat : \n" + strategyB.toString() + "\n");
     if( globalEquityB(strategyB: strategyB, strategyA: strategyA, pot: pot) > globalEquityB(strategyB: actBestStratB, strategyA: strategyA, pot: pot))
     {
-      print("CHANE\n");
+      // print("CHANE\n");
       actBestStratB = strategyB;
     }
 
@@ -709,27 +700,27 @@ StrategyB _recFind(ListCouplePwrBSizingA P, ListCouplePwrBSizingA A, StrategyB a
     ListCouplePwrBSizingA redA = ListCouplePwrBSizingA.copy(A);
     if(redA.list.length > 0)
     {
-      actBestStratB = _recFind(comP, redA, actBestStratB, strategyA, pot);
+      actBestStratB = _recBestFindStratB(comP, redA, actBestStratB, strategyA, pot);
     }
   }
   return actBestStratB;
 }
 
-StrategyB find(StrategyA strategyA, IntChip pot) 
+StrategyB findBestStratB(StrategyA strategyA, IntChip pot) 
 {
   StrategyB strategyB = StrategyB();
   ListCouplePwrBSizingA P = ListCouplePwrBSizingA.empty();
   ListCouplePwrBSizingA A = ListCouplePwrBSizingA.universe();
 
-  return _recFind(P, A, strategyB, strategyA, pot);
+  return _recBestFindStratB(P, A, strategyB, strategyA, pot);
 }
 
-void test_find()
+void test_findBestStratB()
 {
   MIN_POWER = 0;
   MAX_POWER = 2;
   MIN_SIZING = 0;
-  MAX_SIZING = 1;
+  MAX_SIZING = 2;
 
   /* full check */
   StrategyA strategyA = StrategyA();
@@ -739,40 +730,13 @@ void test_find()
   
   IntChip pot = IntChip(1);
 
-  
-  
-  print("VOILA : \n\n ${find(strategyA, pot).toString(strategyA: strategyA)}");
+  StrategyB strategyB = findBestStratB(strategyA, pot);
+
+  assertTrue(strategyB.f(pwrB: IntPower(0), sizingA: IntChip(MAX_SIZING)) == ChoixB.fold, "strategyB.f(pwrB: IntPower(0), sizingA: IntChip(0)) == ChoixB.fold");
+  assertTrue(strategyB.f(pwrB: IntPower(1), sizingA: IntChip(MAX_SIZING)) == ChoixB.call, "strategyB.f(pwrB: IntPower(0), sizingA: IntChip(0)) == ChoixB.fold");
+  assertTrue(strategyB.f(pwrB: IntPower(2), sizingA: IntChip(MAX_SIZING)) == ChoixB.call, "strategyB.f(pwrB: IntPower(0), sizingA: IntChip(0)) == ChoixB.fold");
 
 }
 
-void test_findBestStrategyB()
-{
-  MIN_POWER = 0;
-  MAX_POWER = 1;
-  
-  MIN_SIZING = 0;
-  MAX_SIZING = 1;
 
-  // full check
-  StrategyA strategyA = StrategyA();
-  IntChip pot = IntChip(1);
-
-  //StrategyB bestStratB = findBestStrategyB(strategyA: strategyA, pot: pot);
-/*   print(""); */
-  //print(bestStratB.toString(strategyA : strategyA));
-/*   print("\n\n"); */
-  strategyA.set(pwrA: IntPower(1), sizingA: IntChip(MAX_SIZING));
-  //print("len stra getSizingList = ${strategyA.getSizingList().length}");
-  StrategyB bestStratB = findBestStrategyB(strategyA: strategyA, pot: pot);
-/*   print("");
-  print(bestStratB.toString(strategyA : strategyA)); */
-
-
-  print(globalEquityB(strategyB: bestStratB, strategyA: strategyA, pot: pot)._body);
-  bestStratB.set(pwrB: IntPower(1), sizingA: IntChip(MIN_SIZING), choixB: ChoixB.call);
-  print(globalEquityB(strategyB: bestStratB, strategyA: strategyA, pot: pot)._body);
-/*   print("dd");
-  print(esperanceB(pwrB: IntPower(1), sizingA: IntChip(4), choixB: ChoixB.call, strategyA: strategyA, pot: IntChip(4))._body);
-  print(esperanceB(pwrB: IntPower(1), sizingA: IntChip(4), choixB: ChoixB.fold, strategyA: strategyA, pot: IntChip(4))._body); */
-}
 
