@@ -26,6 +26,12 @@ bool compareListInt(List<int> a, List<int> b)
   return ret;
 }
 
+bool compareDouble(double a, double b)
+{
+  double diff = a - b;
+  return diff.abs() < 0.000001;
+}
+
 // Main ------------------------------------------------------------------------------------------------------ //
 
 void main() {
@@ -44,6 +50,7 @@ void main() {
   // print(strategyA.getSizingList());
   // StrategyB strategyB = findBestStratB(strategyA, pot);
   // print(strategyB.toString(strategyA: strategyA));
+  
 
 
   testAll();
@@ -62,11 +69,7 @@ void assertTrue(bool condition, String description) {
   }
 }
 
-bool eqDouble(double a, double b)
-{
-  double diff = a - b;
-  return diff.abs() < 0.000001;
-}
+
 
 
 
@@ -79,6 +82,7 @@ void testAll()
   test__esperanceB();
   test_globalEquityB();
   test_findBestStratB();
+  test_equityA();
 
   if(TEST)
   {
@@ -108,17 +112,6 @@ double winrateDef({required int powerDef, required RangePower rangeAtk}) {
     }
   }
   ret = ret / rangeAtk.length.toDouble();
-  return ret;
-}
-
-double winrateAtk({required int powerAtk, required RangePower rangeDef}) {
-  double ret = 0.0;
-  for (int element in rangeDef) {
-    if (powerAtk > element) {
-      ret = ret + 1.0;
-    }
-  }
-  ret = ret / rangeDef.length.toDouble();
   return ret;
 }
 
@@ -242,6 +235,18 @@ class StrategyB {
     }
   }
 
+  StrategyB.callByDefault() {
+    for (int pwrB = MIN_POWER;
+        pwrB <= MAX_POWER;
+        pwrB++) {
+      _map[pwrB] = {};
+      for (int sizingA in LIST_SIZING)
+      {
+        _map[pwrB]![sizingA] = ChoixB.call.index;
+      }
+    }
+  }
+
   void set(
       {required int pwrB,
       required int sizingA,
@@ -359,7 +364,7 @@ double esperanceB(
 void test__esperanceB() {
   MAX_POWER = 1;
   assertTrue(
-      eqDouble(esperanceB(
+      compareDouble(esperanceB(
               pwrB: 1,
               sizingA: 0,
               choixB: ChoixB.fold,
@@ -367,7 +372,7 @@ void test__esperanceB() {
               pot: 3), 0),
       "test__esperanceB_1");
   assertTrue(
-      eqDouble(esperanceB(
+      compareDouble(esperanceB(
               pwrB: 1,
               sizingA: 0,
               choixB: ChoixB.call,
@@ -375,7 +380,7 @@ void test__esperanceB() {
               pot: 3),3),
       "test__esperanceB_2");
   assertTrue(
-      eqDouble(esperanceB(
+      compareDouble(esperanceB(
               pwrB: 0,
               sizingA: 0,
               choixB: ChoixB.call,
@@ -383,7 +388,7 @@ void test__esperanceB() {
               pot: 3),1.5),
       "test__esperanceB_3");
   assertTrue(
-      eqDouble(esperanceB(
+      compareDouble(esperanceB(
               pwrB: 0,
               sizingA: 5,
               choixB: ChoixB.call,
@@ -392,7 +397,7 @@ void test__esperanceB() {
       "test__esperanceB_4");
   MAX_POWER = 2;
   assertTrue(
-      eqDouble(esperanceB(
+      compareDouble(esperanceB(
               pwrB: 0,
               sizingA: 5,
               choixB: ChoixB.call,
@@ -402,7 +407,7 @@ void test__esperanceB() {
   
   MAX_POWER = 3;
   assertTrue(
-      eqDouble(esperanceB(
+      compareDouble(esperanceB(
               pwrB: 0,
               sizingA: 5,
               choixB: ChoixB.call,
@@ -630,26 +635,73 @@ void test_findBestStratB()
 
 // Equity A ------------------------------------------------------------------------------------------------------ //
 
-//TODO
-double equityA(
-    {required int pwrB,
-    required int sizingA,
-    required ChoixB choixB,
-    required StrategyA strategyA,
-    required int pot}) // TODO : tester ca
+double winrateAtk({required int powerAtk, required RangePower rangeDef}) {
+  double ret = 0.0;
+  for (int element in rangeDef) {
+    if (powerAtk > element) {
+      ret = ret + 1.0;
+    }
+  }
+  ret = ret / rangeDef.length.toDouble();
+  return ret;
+}
+
+double equityA({required StrategyB strategyB, required int pwrA, required int sizingA ,required int pot})
 {
   double ret = 0.0;
-  if (choixB == ChoixB.call) {
-    ret = (pot + sizingA) *
-            winrateDef(
-                powerDef: pwrB,
-                rangeAtk: strategyA.getRange(sizingA: sizingA)) +
-        (-sizingA )*
-            (1.0 -
-                winrateDef(
-                    powerDef: pwrB,
-                    rangeAtk: strategyA.getRange(sizingA: sizingA)));
-  } // else : value stay 0.0
-
+  RangePower rangeB =  strategyB.getRange(pSizingA: sizingA, pChoixB: ChoixB.call);
+  double probaBCall = rangeB.length / (1 + MAX_POWER - MIN_POWER);
+  double probaAWin = 1;
+  if(!rangeB.isEmpty)
+  {
+    probaAWin = winrateAtk(powerAtk: pwrA, rangeDef: rangeB);
+  }
+  print("probaBCall $probaBCall   probaAWin $probaAWin rangeB $rangeB");
+  ret = (1-probaBCall)*pot + probaBCall*( probaAWin*(pot+sizingA) + (1-probaAWin)*(-sizingA));
   return ret;
+}
+
+void test_equityA()
+{
+  MIN_POWER = 0;
+  MAX_POWER = 0;
+  LIST_SIZING = [0,1];
+
+  {
+    StrategyB strategyB = StrategyB();
+
+    assertTrue(equityA(strategyB: strategyB, pwrA: 0, sizingA: 0, pot: 1) == 1, "equityA(strategyB: strategyB, pwrA: 0, sizingA: 0, pot: 1) == 1");
+    assertTrue(equityA(strategyB: strategyB, pwrA: 0, sizingA: 0, pot: 2) == 2, "equityA(strategyB: strategyB, pwrA: 0, sizingA: 0, pot: 1) == 1");
+    strategyB.set(pwrB: 0, sizingA: 0, choixB: ChoixB.call);
+    assertTrue(equityA(strategyB: strategyB, pwrA: 0, sizingA: 0, pot: 1) == 0, "equityA(strategyB: strategyB, pwrA: 0, sizingA: 0, pot: 1) == 1");
+    strategyB.set(pwrB: 0, sizingA: 1, choixB: ChoixB.call);
+    assertTrue(equityA(strategyB: strategyB, pwrA: 0, sizingA: 1, pot: 1) == -1, "equityA(strategyB: strategyB, pwrA: 0, sizingA: 0, pot: 1) == 1");
+    assertTrue(equityA(strategyB: strategyB, pwrA: 0, sizingA: 1, pot: 42) == -1, "equityA(strategyB: strategyB, pwrA: 0, sizingA: 0, pot: 1) == 1");
+  }
+
+
+  MIN_POWER = 0;
+  MAX_POWER = 1;
+  LIST_SIZING = [0,1];
+
+  {
+    StrategyB strategyB = StrategyB();
+    strategyB.set(pwrB: 1, sizingA: 0, choixB: ChoixB.call);
+    strategyB.set(pwrB: 1, sizingA: 1, choixB: ChoixB.call);
+    assertTrue(equityA(strategyB: strategyB, pwrA: 0, sizingA: 1, pot: 3) == 1, "equityA(strategyB: strategyB, pwrA: 0, sizingA: 0, pot: 1) == 1");
+    assertTrue(equityA(strategyB: strategyB, pwrA: 0, sizingA: 1, pot: 5) == 2, "equityA(strategyB: strategyB, pwrA: 0, sizingA: 0, pot: 1) == 1");
+    assertTrue(equityA(strategyB: strategyB, pwrA: 1, sizingA: 1, pot: 5) == 2, "equityA(strategyB: strategyB, pwrA: 0, sizingA: 0, pot: 1) == 1");
+  }
+
+  MIN_POWER = 0;
+  MAX_POWER = 1;
+  LIST_SIZING = [0,5];
+
+  {
+    StrategyB strategyB = StrategyB.callByDefault();
+    strategyB.set(pwrB: 1, sizingA: 5, choixB: ChoixB.fold);
+    assertTrue(compareDouble(equityA(strategyB: strategyB, pwrA: 1, sizingA: 5, pot: 3),5.5), "equityA(strategyB: strategyB, pwrA: 0, sizingA: 0, pot: 1) == 1");
+  }
+  
+  
 }
