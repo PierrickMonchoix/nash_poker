@@ -1,24 +1,38 @@
 import 'dart:core';
 import 'dart:ffi';
+import 'dart:math';
 
 int MIN_POWER = 0;
 int MAX_POWER = 2;
 
-int MIN_SIZING = 0;
-int MAX_SIZING = 10;
+List<int> LIST_SIZING = [0, 1];
+
+// Utils ------------------------------------------------------------------------------------------------------ //
+
+class IntWrapper
+{
+  int body;
+
+  IntWrapper(this.body);
+}
 
 // Main ------------------------------------------------------------------------------------------------------ //
 
 void main() {
-  print("~~~~~~~~~~~~~~~~~~~~\n");
-  test__StrategyA();
-  test__StrategyB();
-  test__winrateDef();
-  test__esperanceB();
-  test_globalEquityB();
-  test_findBestStratB();
+  // MIN_POWER = 0;
+  // MAX_POWER = 4;
+  // LIST_SIZING = [0,1,2,3];
+  // StrategyA strategyA = StrategyA();
 
-  print("\n~~~~~~~~~~~~~~~~~~~~");
+  // int pot = 1;
+  // strategyA.set(pwrA: 0, sizingA: MAX_SIZING );
+  // strategyA.set(pwrA: 1, sizingA: MAX_SIZING );
+  // strategyA.set(pwrA: 2, sizingA: MAX_SIZING );
+  // strategyA.set(pwrA: 3, sizingA: MAX_SIZING );
+
+  // StrategyB strategyB = findBestStratB(strategyA, pot);
+  // print(strategyB.toString(strategyA: strategyA));
+  testAll();
 }
 
 // Test utils ------------------------------------------------------------------------------------------------------ //
@@ -35,6 +49,19 @@ bool eqDouble(double a, double b)
 {
   double diff = a - b;
   return diff.abs() < 0.000001;
+}
+
+void testAll()
+{
+  print("~~~~~~~~~~~~~~~~~~~~\n");
+  test__StrategyA();
+  test__StrategyB();
+  test__winrateDef();
+  test__esperanceB();
+  test_globalEquityB();
+  test_findBestStratB();
+
+  print("\n~~~~~~~~~~~~~~~~~~~~");
 }
 
 // Unity definition ------------------------------------------------------------------------------------------------------ //
@@ -168,9 +195,8 @@ class StrategyB {
         pwrB <= MAX_POWER;
         pwrB++) {
       _map[pwrB] = {};
-      for (int sizingA = MIN_SIZING;
-          sizingA <= MAX_SIZING ;
-          sizingA++) {
+      for (int sizingA in LIST_SIZING)
+      {
         _map[pwrB]![sizingA] = ChoixB.fold.index;
       }
     }
@@ -198,12 +224,12 @@ class StrategyB {
     for (int pwrB = MIN_POWER ; pwrB <= MAX_POWER ; pwrB++) 
     {
       ret += "pwrB : ${pwrB}\n";
-      for (int sizingA = MIN_SIZING ; sizingA <= MAX_SIZING ; sizingA++)
+      for (int sizingA in LIST_SIZING)
       {
         ret += "         sizingA : ${sizingA} ";
         if((strategyA!=null) && (!strategyA.getSizingList().contains(sizingA)))
         {
-          ret += "         choixB : NEVER HAPPEN ";
+          ret += "         choixB : NH "; //NEVER HAPPEN
         }
         else
         {
@@ -420,7 +446,7 @@ class ListCouplePwrBSizingA
     list = [];
     for (int iPwrB = MIN_POWER ; iPwrB <= MAX_POWER ; iPwrB++)
     {
-      for (int iSizA = MIN_SIZING ; iSizA <= MAX_SIZING ; iSizA++)
+      for (int iSizA in LIST_SIZING)
       {
         CouplePwrBSizingA c = CouplePwrBSizingA(iPwrB, iSizA);
         list.add(c);
@@ -443,7 +469,7 @@ class ListCouplePwrBSizingA
   }
 }
 
-StrategyB _recBestFindStratB(ListCouplePwrBSizingA P, ListCouplePwrBSizingA A, StrategyB actBestStratB, StrategyA strategyA, int pot)
+StrategyB _recBestFindStratB(ListCouplePwrBSizingA P, ListCouplePwrBSizingA A, StrategyB actBestStratB, StrategyA strategyA, int pot, IntWrapper timesRedAEqualZero)
 {
   // com = completed  red = reduced
   while(A.list.isNotEmpty)
@@ -465,8 +491,16 @@ StrategyB _recBestFindStratB(ListCouplePwrBSizingA P, ListCouplePwrBSizingA A, S
     ListCouplePwrBSizingA redA = ListCouplePwrBSizingA.copy(A);
     if(redA.list.length > 0)
     {
-      actBestStratB = _recBestFindStratB(comP, redA, actBestStratB, strategyA, pot);
+      actBestStratB = _recBestFindStratB(comP, redA, actBestStratB, strategyA, pot, timesRedAEqualZero);
     }
+    // else // debug print
+    // {
+    //   int n = LIST_SIZING.length; //maxPath
+    //   num maxTimesRedAEqualZero = pow(2, n) - 1;
+      
+    //   print("${(100*timesRedAEqualZero.body/maxTimesRedAEqualZero).toStringAsPrecision(2)}/100 (100% = $maxTimesRedAEqualZero)"); 
+    //   timesRedAEqualZero.body++;
+    // }
   }
   return actBestStratB;
 }
@@ -477,29 +511,28 @@ StrategyB findBestStratB(StrategyA strategyA, int pot)
   ListCouplePwrBSizingA P = ListCouplePwrBSizingA.empty();
   ListCouplePwrBSizingA A = ListCouplePwrBSizingA.universe();
 
-  return _recBestFindStratB(P, A, strategyB, strategyA, pot);
+  return _recBestFindStratB(P, A, strategyB, strategyA, pot, IntWrapper(0));
 }
 
 void test_findBestStratB()
 {
   MIN_POWER = 0;
   MAX_POWER = 2;
-  MIN_SIZING = 0;
-  MAX_SIZING = 2;
+  LIST_SIZING = [0,1,2];
 
   /* full check */
   StrategyA strategyA = StrategyA();
-  strategyA.set(pwrA: 0, sizingA: MAX_SIZING );
-  strategyA.set(pwrA: 1, sizingA: MAX_SIZING );
-  strategyA.set(pwrA: 2, sizingA: MAX_SIZING );
+  strategyA.set(pwrA: 0, sizingA: 2 );
+  strategyA.set(pwrA: 1, sizingA: 2 );
+  strategyA.set(pwrA: 2, sizingA: 2 );
   
   int pot = 1;
 
   StrategyB strategyB = findBestStratB(strategyA, pot);
 
-  assertTrue(strategyB.f(pwrB: 0, sizingA: MAX_SIZING ) == ChoixB.fold, "strategyB.f(pwrB: 0), sizingA: 0)) == ChoixB.fold");
-  assertTrue(strategyB.f(pwrB: 1, sizingA: MAX_SIZING ) == ChoixB.call, "strategyB.f(pwrB: 0), sizingA: 0)) == ChoixB.fold");
-  assertTrue(strategyB.f(pwrB: 2, sizingA: MAX_SIZING ) == ChoixB.call, "strategyB.f(pwrB: 0), sizingA: 0)) == ChoixB.fold");
+  assertTrue(strategyB.f(pwrB: 0, sizingA: 2 ) == ChoixB.fold, "strategyB.f(pwrB: 0), sizingA: 0)) == ChoixB.fold");
+  assertTrue(strategyB.f(pwrB: 1, sizingA: 2 ) == ChoixB.call, "strategyB.f(pwrB: 0), sizingA: 0)) == ChoixB.fold");
+  assertTrue(strategyB.f(pwrB: 2, sizingA: 2 ) == ChoixB.call, "strategyB.f(pwrB: 0), sizingA: 0)) == ChoixB.fold");
 
 }
 
