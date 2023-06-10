@@ -100,14 +100,25 @@ typedef RangePower = List<int>;
 
 // Compute utils ------------------------------------------------------------------------------------------------------ //
 
-double winrateDef({required int POWERDef, required RangePower rangeAtk}) {
+double winrateDef({required int powerDef, required RangePower rangeAtk}) {
   double ret = 0.0;
   for (int element in rangeAtk) {
-    if (POWERDef >= element) {
+    if (powerDef >= element) {
       ret = ret + 1.0;
     }
   }
   ret = ret / rangeAtk.length.toDouble();
+  return ret;
+}
+
+double winrateAtk({required int powerAtk, required RangePower rangeDef}) {
+  double ret = 0.0;
+  for (int element in rangeDef) {
+    if (powerAtk > element) {
+      ret = ret + 1.0;
+    }
+  }
+  ret = ret / rangeDef.length.toDouble();
   return ret;
 }
 
@@ -116,7 +127,7 @@ bool test__winrateDef() {
   RangePower rangeAtk = [0, 1, 2];
   int POWERDef = 1;
   assertTrue(
-      winrateDef(POWERDef: POWERDef, rangeAtk: rangeAtk) == 2 / 3,
+      winrateDef(powerDef: POWERDef, rangeAtk: rangeAtk) == 2 / 3,
       "winrateDef(POWERDef: POWERDef, rangeAtk: rangeAtk).compare(2/3))");
   return ret;
 }
@@ -333,12 +344,12 @@ double esperanceB(
   if (choixB == ChoixB.call) {
     ret = (pot + sizingA) *
             winrateDef(
-                POWERDef: pwrB,
+                powerDef: pwrB,
                 rangeAtk: strategyA.getRange(sizingA: sizingA)) +
         (-sizingA )*
             (1.0 -
                 winrateDef(
-                    POWERDef: pwrB,
+                    powerDef: pwrB,
                     rangeAtk: strategyA.getRange(sizingA: sizingA)));
   } // else : value stay 0.0
 
@@ -614,7 +625,7 @@ void test_findBestStratB()
   assertTrue(strategyB.f(pwrB: 0, sizingA: 2 ) == ChoixB.fold, "strategyB.f(pwrB: 0), sizingA: 0)) == ChoixB.fold");
   assertTrue(strategyB.f(pwrB: 1, sizingA: 2 ) == ChoixB.call, "strategyB.f(pwrB: 0), sizingA: 0)) == ChoixB.fold");
   assertTrue(strategyB.f(pwrB: 2, sizingA: 2 ) == ChoixB.call, "strategyB.f(pwrB: 0), sizingA: 0)) == ChoixB.fold");
-
+  
 }
 
 // Equity A ------------------------------------------------------------------------------------------------------ //
@@ -631,12 +642,12 @@ double equityA(
   if (choixB == ChoixB.call) {
     ret = (pot + sizingA) *
             winrateDef(
-                POWERDef: pwrB,
+                powerDef: pwrB,
                 rangeAtk: strategyA.getRange(sizingA: sizingA)) +
         (-sizingA )*
             (1.0 -
                 winrateDef(
-                    POWERDef: pwrB,
+                    powerDef: pwrB,
                     rangeAtk: strategyA.getRange(sizingA: sizingA)));
   } // else : value stay 0.0
 
