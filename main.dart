@@ -23,26 +23,33 @@ void main() {
   // MAX_POWER = 4;
   // LIST_SIZING = [0,1,2,3];
   // StrategyA strategyA = StrategyA();
+  
+  // int pot = 10;
+  // strategyA.set(pwrA: 0, sizingA: 3 );
+  // strategyA.set(pwrA: 1, sizingA: 3 );
+  // strategyA.set(pwrA: 2, sizingA: 3 );
+  // strategyA.set(pwrA: 3, sizingA: 3 );
+  // strategyA.set(pwrA: 4, sizingA: 3 );
 
-  // int pot = 1;
-  // strategyA.set(pwrA: 0, sizingA: MAX_SIZING );
-  // strategyA.set(pwrA: 1, sizingA: MAX_SIZING );
-  // strategyA.set(pwrA: 2, sizingA: MAX_SIZING );
-  // strategyA.set(pwrA: 3, sizingA: MAX_SIZING );
-
+  // print(strategyA.getSizingList());
   // StrategyB strategyB = findBestStratB(strategyA, pot);
   // print(strategyB.toString(strategyA: strategyA));
+
+
   testAll();
 }
 
 // Test utils ------------------------------------------------------------------------------------------------------ //
 
-void assertTrue(bool condition, String description) {
+bool assertTrue(bool condition, String description) {
+  bool ret = false;
   if (true == condition) {
+    ret = true;
     print("test OK : " + description);
   } else {
     print("/!\\ : test KO : " + description);
   }
+  return ret;
 }
 
 bool eqDouble(double a, double b)
@@ -50,6 +57,8 @@ bool eqDouble(double a, double b)
   double diff = a - b;
   return diff.abs() < 0.000001;
 }
+
+bool TEST = true;
 
 void testAll()
 {
@@ -60,6 +69,15 @@ void testAll()
   test__esperanceB();
   test_globalEquityB();
   test_findBestStratB();
+
+  if(TEST)
+  {
+    print("\x1b[32m ALL TEST PASSED \x1b[0m");
+  }
+  else
+  {
+    print("\x1b[31m SOME TESTS FAILED \x1b[0m");
+  }
 
   print("\n~~~~~~~~~~~~~~~~~~~~");
 }
@@ -83,12 +101,14 @@ double winrateDef({required int POWERDef, required Range rangeAtk}) {
   return ret;
 }
 
-void test__winrateDef() {
+bool test__winrateDef() {
+  bool ret = false;
   Range rangeAtk = [0, 1, 2];
   int POWERDef = 1;
-  assertTrue(
+  TEST &= assertTrue(
       winrateDef(POWERDef: POWERDef, rangeAtk: rangeAtk) == 2 / 3,
       "winrateDef(POWERDef: POWERDef, rangeAtk: rangeAtk).compare(2/3))");
+  return ret;
 }
 
 // Strategy A ------------------------------------------------------------------------------------------------------ //
@@ -136,7 +156,6 @@ class StrategyA {
   List<int> getSizingList()
   {
     List<int> ret = [];
-    ret.add(_map[MIN_POWER]!);
     for(int pwrA = MIN_POWER; pwrA <= MAX_POWER; pwrA++)
     {
       int sizingA = _map[pwrA]!;
@@ -170,17 +189,17 @@ void test__StrategyA() {
   strategyA.set(pwrA: 0, sizingA: 0);
   strategyA.set(pwrA: 1, sizingA: 10);
 
-  assertTrue(strategyA.f(pwrA: 0) == 0,
+  TEST &= assertTrue(strategyA.f(pwrA: 0) == 0,
       "strategyA.f(pwrA:0)) == 0)");
-  assertTrue(strategyA.f(pwrA: 1) == 10,
+  TEST &= assertTrue(strategyA.f(pwrA: 1) == 10,
       "strategyA.f(pwrA:1)) == 10)");
-  assertTrue(
+  TEST &= assertTrue(
       (strategyA.getRange(sizingA: 10)[0] == 1) &&
           (strategyA.getRange(sizingA: 10).length == 1),
       "(strategyA.getRange(sizingA : 10))[0] == 1)) && (strategyA.getRange(sizingA : 10)).length == 1)");
-  assertTrue(strategyA.getFreqSizing(10) == 0.5, "strategyA.freqSizing(10)) == 0.5)");
-  assertTrue(strategyA.getFreqSizing(0) == 0.5, "strategyA.freqSizing(0)) == 0.5)");
-  assertTrue(strategyA.getFreqSizing(2) == 0.0, "strategyA.freqSizing(2)) == 0.0)");
+  TEST &= assertTrue(strategyA.getFreqSizing(10) == 0.5, "strategyA.freqSizing(10)) == 0.5)");
+  TEST &= assertTrue(strategyA.getFreqSizing(0) == 0.5, "strategyA.freqSizing(0)) == 0.5)");
+  TEST &= assertTrue(strategyA.getFreqSizing(2) == 0.0, "strategyA.freqSizing(2)) == 0.0)");
 }
 
 // Strategy B ------------------------------------------------------------------------------------------------------ //
@@ -246,10 +265,10 @@ void test__StrategyB() {
   StrategyB strategyB = StrategyB();
   strategyB.set(pwrB: 0, sizingA: 0, choixB: ChoixB.call);
   strategyB.set(pwrB: 1, sizingA: 2, choixB: ChoixB.fold);
-  assertTrue(
+  TEST &= assertTrue(
       strategyB.f(pwrB: 0, sizingA: 0) == ChoixB.call,
       "strategyB.f(pwrB: 0), sizingA: 0)) == ChoixB.call");
-  assertTrue(
+  TEST &= assertTrue(
       strategyB.f(pwrB: 1, sizingA: 2) == ChoixB.fold,
       "strategyB.f(pwrB: 1), sizingA: 2)) == ChoixB.fold");
 }
@@ -281,7 +300,7 @@ double esperanceB(
 
 void test__esperanceB() {
   MAX_POWER = 1;
-  assertTrue(
+  TEST &= assertTrue(
       eqDouble(esperanceB(
               pwrB: 1,
               sizingA: 0,
@@ -289,7 +308,7 @@ void test__esperanceB() {
               strategyA: StrategyA(),
               pot: 3), 0),
       "test__esperanceB_1");
-  assertTrue(
+  TEST &= assertTrue(
       eqDouble(esperanceB(
               pwrB: 1,
               sizingA: 0,
@@ -297,7 +316,7 @@ void test__esperanceB() {
               strategyA: StrategyA(),
               pot: 3),3),
       "test__esperanceB_2");
-  assertTrue(
+  TEST &= assertTrue(
       eqDouble(esperanceB(
               pwrB: 0,
               sizingA: 0,
@@ -305,7 +324,7 @@ void test__esperanceB() {
               strategyA: StrategyA(),
               pot: 3),1.5),
       "test__esperanceB_3");
-  assertTrue(
+  TEST &= assertTrue(
       eqDouble(esperanceB(
               pwrB: 0,
               sizingA: 5,
@@ -314,7 +333,7 @@ void test__esperanceB() {
               pot: 3), 1.5),
       "test__esperanceB_4");
   MAX_POWER = 2;
-  assertTrue(
+  TEST &= assertTrue(
       eqDouble(esperanceB(
               pwrB: 0,
               sizingA: 5,
@@ -324,7 +343,7 @@ void test__esperanceB() {
       "test__esperanceB_5");
   
   MAX_POWER = 3;
-  assertTrue(
+  TEST &= assertTrue(
       eqDouble(esperanceB(
               pwrB: 0,
               sizingA: 5,
@@ -360,22 +379,22 @@ void test_globalEquityB()
 
   strategyB.set(pwrB: 0, sizingA: 0, choixB: ChoixB.fold);
   strategyB.set(pwrB: 1, sizingA: 0, choixB: ChoixB.fold);
-  assertTrue(globalEquityB(strategyB: strategyB, strategyA: strategyA, pot: pot) == 0, "globalEquityB ff");
+  TEST &= assertTrue(globalEquityB(strategyB: strategyB, strategyA: strategyA, pot: pot) == 0, "globalEquityB ff");
 
   // call with 0
   strategyB.set(pwrB: 0, sizingA: 0, choixB: ChoixB.call);
   strategyB.set(pwrB: 1, sizingA: 0, choixB: ChoixB.fold);
-  assertTrue(globalEquityB(strategyB: strategyB, strategyA: strategyA, pot: pot) == 1/4, "globalEquityB cf");
+  TEST &= assertTrue(globalEquityB(strategyB: strategyB, strategyA: strategyA, pot: pot) == 1/4, "globalEquityB cf");
 
   // call with 1
   strategyB.set(pwrB: 0, sizingA: 0, choixB: ChoixB.fold);
   strategyB.set(pwrB: 1, sizingA: 0, choixB: ChoixB.call);
-  assertTrue(globalEquityB(strategyB: strategyB, strategyA: strategyA, pot: pot) == 2/4, "globalEquityB fc");
+  TEST &= assertTrue(globalEquityB(strategyB: strategyB, strategyA: strategyA, pot: pot) == 2/4, "globalEquityB fc");
 
   // full call
   strategyB.set(pwrB: 0, sizingA: 0, choixB: ChoixB.call);
   strategyB.set(pwrB: 1, sizingA: 0, choixB: ChoixB.call);
-  assertTrue(globalEquityB(strategyB: strategyB, strategyA: strategyA, pot: pot) == 3/4, "globalEquityB cc");
+  TEST &= assertTrue(globalEquityB(strategyB: strategyB, strategyA: strategyA, pot: pot) == 3/4, "globalEquityB cc");
 
 }
 
@@ -454,6 +473,17 @@ class ListCouplePwrBSizingA
     }
   }
 
+  ListCouplePwrBSizingA.universePowerRestricSizing({required List<int> listSizing}) 
+  {
+    list = [];
+    for (int iPwrB = MIN_POWER; iPwrB <= MAX_POWER; iPwrB++) {
+      for (int iSizA in listSizing) {
+        CouplePwrBSizingA c = CouplePwrBSizingA(iPwrB, iSizA);
+        list.add(c);
+      }
+    }
+  }
+
   ListCouplePwrBSizingA.copy(ListCouplePwrBSizingA listCouplePwrBSizingA)
   {
     list = [];
@@ -469,7 +499,7 @@ class ListCouplePwrBSizingA
   }
 }
 
-StrategyB _recBestFindStratB(ListCouplePwrBSizingA P, ListCouplePwrBSizingA A, StrategyB actBestStratB, StrategyA strategyA, int pot, IntWrapper timesRedAEqualZero)
+StrategyB _recBestFindStratB(ListCouplePwrBSizingA P, ListCouplePwrBSizingA A, StrategyB bestStratB, StrategyA strategyA, int pot, IntWrapper timesRedAEqualZero)
 {
   // com = completed  red = reduced
   while(A.list.isNotEmpty)
@@ -480,9 +510,9 @@ StrategyB _recBestFindStratB(ListCouplePwrBSizingA P, ListCouplePwrBSizingA A, S
       strategyB.set(pwrB: p.pwrB, sizingA: p.sizA, choixB: ChoixB.call);
     }
     strategyB.set(pwrB: elem.pwrB, sizingA: elem.sizA, choixB: ChoixB.call);
-    if( globalEquityB(strategyB: strategyB, strategyA: strategyA, pot: pot) > globalEquityB(strategyB: actBestStratB, strategyA: strategyA, pot: pot))
+    if( globalEquityB(strategyB: strategyB, strategyA: strategyA, pot: pot) > globalEquityB(strategyB: bestStratB, strategyA: strategyA, pot: pot))
     {
-      actBestStratB = strategyB;
+      bestStratB = strategyB;
     }
 
     ListCouplePwrBSizingA comP = ListCouplePwrBSizingA.copy(P);
@@ -491,25 +521,25 @@ StrategyB _recBestFindStratB(ListCouplePwrBSizingA P, ListCouplePwrBSizingA A, S
     ListCouplePwrBSizingA redA = ListCouplePwrBSizingA.copy(A);
     if(redA.list.length > 0)
     {
-      actBestStratB = _recBestFindStratB(comP, redA, actBestStratB, strategyA, pot, timesRedAEqualZero);
+      bestStratB = _recBestFindStratB(comP, redA, bestStratB, strategyA, pot, timesRedAEqualZero);
     }
-    // else // debug print
-    // {
-    //   int n = LIST_SIZING.length; //maxPath
-    //   num maxTimesRedAEqualZero = pow(2, n) - 1;
+    else // debug print
+    {
+      int n = LIST_SIZING.length; //maxPath
+      num maxTimesRedAEqualZero = pow(2, n) - 1;
       
-    //   print("${(100*timesRedAEqualZero.body/maxTimesRedAEqualZero).toStringAsPrecision(2)}/100 (100% = $maxTimesRedAEqualZero)"); 
-    //   timesRedAEqualZero.body++;
-    // }
+      print("${(100*timesRedAEqualZero.body/maxTimesRedAEqualZero).toStringAsPrecision(2)}/100 (100% = $maxTimesRedAEqualZero)"); 
+      timesRedAEqualZero.body++;
+    }
   }
-  return actBestStratB;
+  return bestStratB;
 }
 
 StrategyB findBestStratB(StrategyA strategyA, int pot) 
 {
   StrategyB strategyB = StrategyB();
   ListCouplePwrBSizingA P = ListCouplePwrBSizingA.empty();
-  ListCouplePwrBSizingA A = ListCouplePwrBSizingA.universe();
+  ListCouplePwrBSizingA A = ListCouplePwrBSizingA.universePowerRestricSizing(listSizing: strategyA.getSizingList());
 
   return _recBestFindStratB(P, A, strategyB, strategyA, pot, IntWrapper(0));
 }
@@ -530,9 +560,9 @@ void test_findBestStratB()
 
   StrategyB strategyB = findBestStratB(strategyA, pot);
 
-  assertTrue(strategyB.f(pwrB: 0, sizingA: 2 ) == ChoixB.fold, "strategyB.f(pwrB: 0), sizingA: 0)) == ChoixB.fold");
-  assertTrue(strategyB.f(pwrB: 1, sizingA: 2 ) == ChoixB.call, "strategyB.f(pwrB: 0), sizingA: 0)) == ChoixB.fold");
-  assertTrue(strategyB.f(pwrB: 2, sizingA: 2 ) == ChoixB.call, "strategyB.f(pwrB: 0), sizingA: 0)) == ChoixB.fold");
+  TEST &= assertTrue(strategyB.f(pwrB: 0, sizingA: 2 ) == ChoixB.fold, "strategyB.f(pwrB: 0), sizingA: 0)) == ChoixB.fold");
+  TEST &= assertTrue(strategyB.f(pwrB: 1, sizingA: 2 ) == ChoixB.call, "strategyB.f(pwrB: 0), sizingA: 0)) == ChoixB.fold");
+  TEST &= assertTrue(strategyB.f(pwrB: 2, sizingA: 2 ) == ChoixB.call, "strategyB.f(pwrB: 0), sizingA: 0)) == ChoixB.fold");
 
 }
 
